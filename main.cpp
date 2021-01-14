@@ -1,67 +1,71 @@
-#include "stack"
 #include <iostream>
-#include <string>
-#include "list"
-#include <chrono>
+#include <initializer_list>
+#include <algorithm>
+#include <vector>
 
-using namespace std::chrono;
 using namespace std;
-high_resolution_clock::time_point startTime;
-class count_sort{
 
+template <typename T, typename U>
+class Dictionary{
+private:
+    std::vector<T> keys;
+    std::vector<U> values;
 public:
-    void countSort(long data[],const long n ){
-
-        long i;
-        long largest = data[0];
-        long *temp = new long[n];
-
-        for(i=1;i<n;i++){
-            if(largest < data[i]){
-                largest = data[i];
-            }
-        }
-        unsigned long *count = new unsigned long[largest+1];
-
-        for(i=0;i<=largest;i++){
-            count[i]=0;
-        }
-        for(i=0;i<n;i++){
-            count [data[i]] ++;
-        }
-        for(i=0;i<=largest;i++){
-            count[i] = count[i-1] + count[i];
-        }
-        for(i=n-1;i>=0;i--){
-            temp[count[data[i]]-1] = data[i];
-            count[data[i]]--;
-        }
-        for(i=0;i<n;i++){
-            data[i]=temp[i];
-        }
-
-    }
-    void display(long array[], long size) {
-        for(long i = 0; i<size; i++)
-            cout << array[i] << " ";
-        cout << endl;
-    }
-
+    Dictionary();
+    Dictionary(std::initializer_list<std::pair<T,U>>);
+    bool has(T) const;
+    void add(T,U);
+    T* begin();
+    T* end();
+    U operator[](T);
 };
 
-int main() {
-    count_sort s;
-    long n=5;
-    long arr[5]= {534,3,4,63,23};
+template <typename T, typename U>
+T* Dictionary<T,U>::begin(){
+    return &(keys[0]);
+}
 
-    cout << "Array before count Sorting: "<<endl;
-    s.display(arr,n);
-    startTime = high_resolution_clock::now();
-    s.countSort(arr, n);
-    cout << "Time for count Sorting: "<<endl;
-    cout <<duration_cast<microseconds>(high_resolution_clock::now() - startTime).count() << "us\n";
-    cout << "Array after count Sorting: "<<endl;
-    s.display(arr,n);
+template <typename T, typename U>
+T* Dictionary<T,U>::end(){
+    return &(keys[keys.size()-1])+1;
+}
+
+template <typename T, typename U>
+Dictionary<T,U>::Dictionary (std::initializer_list<std::pair<T,U>> store){
+    for (std::pair<T,U> object : store){
+        keys.push_back(object.first);
+        values.push_back(object.second);
+    }
+}
+
+template <typename T, typename U>
+bool Dictionary<T,U>::has(T targetKey) const{
+    for (T currentKey : keys){
+        if (currentKey == targetKey){
+            return true;
+        }
+    }
+    return false;
+}
+
+template <typename T, typename U>
+void Dictionary<T,U>::add (T key, U value){
+    keys.push_back(key);
+    values.push_back(value);
+}
+
+template <typename T, typename U>
+U Dictionary<T,U>::operator[] (T key){
+    unsigned int pos = std::find(keys.begin(), keys.end(), key) - keys.begin();
+    return values[pos];
+}
+
+
+
+
+
+int main() {
+
 
     return 0;
 }

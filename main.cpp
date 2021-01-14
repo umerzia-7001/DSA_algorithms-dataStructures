@@ -1,71 +1,94 @@
+
+/* Tries data structure for dictionary
+ *  finds meaning of word wrt to certain word stored in tries
+ *  implemented by umer zia
+ * importing essential libraries */
+
 #include <iostream>
-#include <initializer_list>
-#include <algorithm>
-#include <vector>
+#include <unordered_map> // for storing char in  tries . Each value is in key value form
 
 using namespace std;
 
-template <typename T, typename U>
-class Dictionary{
-private:
-    std::vector<T> keys;
-    std::vector<U> values;
-public:
-    Dictionary();
-    Dictionary(std::initializer_list<std::pair<T,U>>);
-    bool has(T) const;
-    void add(T,U);
-    T* begin();
-    T* end();
-    U operator[](T);
+// Structure for Trie
+struct Trie {
+    bool end; // for making record if node is leaf node . If it is -> searching stops
+    unordered_map<char, Trie*> map;
+    // For each char (key) in tries there is a value of meaning (string)
+    string meaning; // meaning for words in dictionary
 };
 
-template <typename T, typename U>
-T* Dictionary<T,U>::begin(){
-    return &(keys[0]);
+// Function to create a new Trie node
+Trie* getNewTrieNode()
+{
+    Trie* node = new Trie;
+    node->end = false;
+    return node;
 }
 
-template <typename T, typename U>
-T* Dictionary<T,U>::end(){
-    return &(keys[keys.size()-1])+1;
-}
+// Function to insert a word with its meaning
+// in the dictionary built using a Trie
+void insert(Trie*& root, const string& str,
+            const string& meaning)
+{
 
-template <typename T, typename U>
-Dictionary<T,U>::Dictionary (std::initializer_list<std::pair<T,U>> store){
-    for (std::pair<T,U> object : store){
-        keys.push_back(object.first);
-        values.push_back(object.second);
+    // If root is null
+    if (root == NULL)
+        root = getNewTrieNode();
+
+    Trie* temp = root;
+    for (int i = 0; i < str.length(); i++) {
+        char x = str[i];
+
+        // Make a new node if there is no path
+        if (temp->map.find(x) == temp->map.end())
+            temp->map[x] = getNewTrieNode();
+
+        temp = temp->map[x];
     }
+    // Iterates through each letter of input word . If letter already not in tree then it makes new node
+    // else if word already exists it searches down the tries till whole word is completed.
+
+    // Mark end of word and store the meaning
+    temp->end = true;
+    temp->meaning = meaning; // storing input meaning in the leaf node
 }
 
-template <typename T, typename U>
-bool Dictionary<T,U>::has(T targetKey) const{
-    for (T currentKey : keys){
-        if (currentKey == targetKey){
-            return true;
-        }
+// Function to search a word in the Trie
+// and return its meaning if the word exists
+string getMeaning(Trie* root, const string& word)
+{
+
+    // If root is null i.e. the dictionary is empty
+    if (root == NULL)
+        return "";
+
+    Trie* temp = root;
+
+    // Search a word in the Trie
+    for (int i = 0; i < word.length(); i++) {
+        temp = temp->map[word[i]];
+        if (temp == NULL) // if word not found return empty string
+            return "";
     }
-    return false;
+
+    // If it is the end of a valid word stored
+    // before then return its meaning
+    if (temp->end)
+        return temp->meaning;
+    return "";
 }
 
-template <typename T, typename U>
-void Dictionary<T,U>::add (T key, U value){
-    keys.push_back(key);
-    values.push_back(value);
-}
+// to be used in our main class for inserting and searching meaning.
+int main()
+{
+    Trie* root = NULL;
 
-template <typename T, typename U>
-U Dictionary<T,U>::operator[] (T key){
-    unsigned int pos = std::find(keys.begin(), keys.end(), key) - keys.begin();
-    return values[pos];
-}
+    // inserting word in dictionary
+    insert(root, "computer", "A computer is a machine that can be instructed to carry out sequences of arithmetic computations");
 
-
-
-
-
-int main() {
-
+    // searching meaning for saved word in dictionary
+    string input = "computer";
+    cout << getMeaning(root, input);
 
     return 0;
 }
